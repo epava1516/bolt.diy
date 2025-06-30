@@ -15,6 +15,8 @@ export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (auth.isAuthenticated) {
@@ -22,10 +24,18 @@ export default function Login() {
     }
   }, [auth.isAuthenticated, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(username, password);
-    navigate('/');
+    setError(null);
+    setLoading(true);
+    try {
+      await login(username, password);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,10 +44,26 @@ export default function Login() {
       <Header />
       <form className="flex flex-col gap-4 m-auto w-80" onSubmit={handleSubmit}>
         <h1 className="text-2xl text-center text-bolt-elements-textPrimary">Login</h1>
-        <Input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <Button type="submit" className="mt-2">
-          Sign In
+        {error && (
+          <div className="text-red-600 text-sm text-center">
+            {error}
+          </div>
+        )}
+        <Input
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          disabled={loading}
+        />
+        <Input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
+        />
+        <Button type="submit" className="mt-2" disabled={loading}>
+          {loading ? 'Signing In…' : 'Sign In'}
         </Button>
       </form>
     </div>

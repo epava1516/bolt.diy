@@ -102,6 +102,7 @@ project, please check the [project management guide](./PROJECT.md) to get starte
 - **Attach images to prompts** for better contextual understanding.
 - **Integrated terminal** to view output of LLM-run commands.
 - **Revert code to earlier versions** for easier debugging and quicker changes.
+- **Optional login screen** with session persistence using a database.
 - **Download projects as ZIP** for easy portability Sync to a folder on the host.
 - **Integration-ready Docker support** for a hassle-free setup.
 - **Deploy** directly to **Netlify**
@@ -161,7 +162,13 @@ You have two options for running Bolt.DIY: directly on your machine or using Doc
    pnpm install
    ```
 
-3. **Start the Application**:
+3. **Configure the session database** by setting the `DATABASE_URL` environment variable. If unset, an in-memory store is used:
+
+   ```bash
+   export DATABASE_URL="postgres://user:pass@host:5432/dbname"
+   ```
+
+4. **Start the Application**:
 
    ```bash
    pnpm run dev
