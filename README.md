@@ -102,6 +102,7 @@ project, please check the [project management guide](./PROJECT.md) to get starte
 - **Attach images to prompts** for better contextual understanding.
 - **Integrated terminal** to view output of LLM-run commands.
 - **Revert code to earlier versions** for easier debugging and quicker changes.
+- **Optional login screen** with session persistence using IndexedDB.
 - **Download projects as ZIP** for easy portability Sync to a folder on the host.
 - **Integration-ready Docker support** for a hassle-free setup.
 - **Deploy** directly to **Netlify**
