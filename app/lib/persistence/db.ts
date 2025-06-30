@@ -348,11 +348,7 @@ export async function deleteSnapshot(db: IDBDatabase, chatId: string): Promise<v
   });
 }
 
-export async function saveSession(
-  db: IDBDatabase,
-  token: string,
-  username: string,
-): Promise<void> {
+export async function saveSession(db: IDBDatabase, token: string, username: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('session', 'readwrite');
     const store = transaction.objectStore('session');
@@ -363,9 +359,7 @@ export async function saveSession(
   });
 }
 
-export async function getSession(
-  db: IDBDatabase,
-): Promise<{ token: string; username: string } | undefined> {
+export async function getSession(db: IDBDatabase): Promise<{ token: string; username: string } | undefined> {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('session', 'readonly');
     const store = transaction.objectStore('session');

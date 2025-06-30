@@ -1,10 +1,5 @@
 import { atom } from 'nanostores';
-import {
-  openDatabase,
-  saveSession,
-  getSession,
-  deleteSession,
-} from '~/lib/persistence/db';
+import { openDatabase, saveSession, getSession, deleteSession } from '~/lib/persistence/db';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -16,9 +11,13 @@ export const authStore = atom<AuthState>({ isAuthenticated: false });
 // Load session from IndexedDB on startup
 openDatabase()
   .then(async (db) => {
-    if (!db) return;
+    if (!db) {
+      return;
+    }
+
     try {
       const session = await getSession(db);
+
       if (session) {
         authStore.set({ isAuthenticated: true, username: session.username });
       }
@@ -34,6 +33,7 @@ export async function login(username: string, _password: string) {
   authStore.set(newState);
 
   const db = await openDatabase();
+
   if (db) {
     try {
       await saveSession(db, crypto.randomUUID(), username);
@@ -47,6 +47,7 @@ export async function logout() {
   authStore.set({ isAuthenticated: false });
 
   const db = await openDatabase();
+
   if (db) {
     try {
       await deleteSession(db);
