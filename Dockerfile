@@ -3,21 +3,21 @@ FROM ${BASE} AS base
 
 WORKDIR /app
 
-# Install dependencies (this step is cached as long as the dependencies don't change)
+# 1) Instala dependencias
 COPY package.json pnpm-lock.yaml ./
-
-#RUN npm install -g corepack@latest
-
-#RUN corepack enable pnpm && pnpm install
 RUN npm install -g pnpm && pnpm install
 
-# Copy the rest of your app's source code
+# 2) Copia el resto del código
 COPY . .
 
-# Expose the port the app runs on
+# 3) Asegúrate de que package.json esté en public/
+#    (crea public/ si no existe y copia el package.json dentro)
+RUN mkdir -p public && cp package.json public/package.json
+
+# Exponemos el puerto (sólo informativo en la etapa base)
 EXPOSE 5173
 
-# Production image
+# Producción
 FROM base AS bolt-ai-production
 
 # Define environment variables with default values or let them be overridden
@@ -51,15 +51,16 @@ ENV WRANGLER_SEND_METRICS=false \
     DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
     RUNNING_IN_DOCKER=true
 
-# Pre-configure wrangler to disable metrics
+# Pre-configuración de wrangler…
 RUN mkdir -p /root/.config/.wrangler && \
     echo '{"enabled":false}' > /root/.config/.wrangler/metrics.json
 
+# 4) Ahora el build verá public/package.json y lo copiará a build/client
 RUN pnpm run build
 
-CMD [ "pnpm", "run", "dockerstart"]
+CMD [ "pnpm", "run", "dockerstart" ]
 
-# Development image
+# Desarrollo
 FROM base AS bolt-ai-development
 
 # Define the same environment variables for development
