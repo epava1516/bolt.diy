@@ -22,7 +22,7 @@ FROM base AS bolt-ai-production
 
 # Define environment variables with default values or let them be overridden
 ARG GROQ_API_KEY
-ARG HuggingFace_API_KEY
+ARG HUGGINGFACE_API_KEY
 ARG OPENAI_API_KEY
 ARG ANTHROPIC_API_KEY
 ARG OPEN_ROUTER_API_KEY
@@ -37,7 +37,7 @@ ARG DEFAULT_NUM_CTX
 
 ENV WRANGLER_SEND_METRICS=false \
     GROQ_API_KEY=${GROQ_API_KEY} \
-    HuggingFace_KEY=${HuggingFace_API_KEY} \
+    HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY} \
     OPENAI_API_KEY=${OPENAI_API_KEY} \
     ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY} \
     OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY} \
@@ -94,3 +94,15 @@ ENV GROQ_API_KEY=${GROQ_API_KEY} \
 
 RUN mkdir -p ${WORKDIR}/run
 CMD pnpm run dev --host
+
+
+# -----------------
+# Etapa de PREVIEW
+# -----------------
+FROM bolt-ai-production AS bolt-ai-preview
+
+# Exponemos el puerto para preview
+EXPOSE 5173
+
+# Arrancamos el build ya generado con el script de preview
+CMD ["pnpm","run","preview"]
