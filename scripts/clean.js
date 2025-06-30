@@ -1,4 +1,4 @@
-import { rm, existsSync } from 'fs';
+import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
@@ -18,11 +18,11 @@ for (const dir of dirsToRemove) {
   try {
     if (existsSync(fullPath)) {
       console.log(`Removing ${dir}...`);
-      rm(fullPath, { recursive: true, force: true }, (err) => {
-        if (err) {
-          console.error(`Error removing ${dir}:`, err.message);
-        }
-      });
+      try {
+        rmSync(fullPath, { recursive: true, force: true });
+      } catch (err) {
+        console.error(`Error removing ${dir}:`, err.message);
+      }
     }
   } catch (err) {
     console.error(`Error removing ${dir}:`, err.message);
