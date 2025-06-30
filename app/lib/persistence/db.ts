@@ -19,7 +19,7 @@ export async function openDatabase(): Promise<IDBDatabase | undefined> {
   }
 
   return new Promise((resolve) => {
-    const request = indexedDB.open('boltHistory', 2);
+    const request = indexedDB.open('boltHistory', 3);
 
     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
       const db = (event.target as IDBOpenDBRequest).result;
@@ -36,6 +36,12 @@ export async function openDatabase(): Promise<IDBDatabase | undefined> {
       if (oldVersion < 2) {
         if (!db.objectStoreNames.contains('snapshots')) {
           db.createObjectStore('snapshots', { keyPath: 'chatId' });
+        }
+      }
+
+      if (oldVersion < 3) {
+        if (!db.objectStoreNames.contains('session')) {
+          db.createObjectStore('session', { keyPath: 'id' });
         }
       }
     };
@@ -339,5 +345,45 @@ export async function deleteSnapshot(db: IDBDatabase, chatId: string): Promise<v
         reject(request.error);
       }
     };
+  });
+}
+
+export async function saveSession(
+  db: IDBDatabase,
+  token: string,
+  username: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('session', 'readwrite');
+    const store = transaction.objectStore('session');
+    const request = store.put({ id: 'current', token, username });
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function getSession(
+  db: IDBDatabase,
+): Promise<{ token: string; username: string } | undefined> {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('session', 'readonly');
+    const store = transaction.objectStore('session');
+    const request = store.get('current');
+
+    request.onsuccess = () => resolve(request.result as any);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function deleteSession(db: IDBDatabase): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('session', 'readwrite');
+    const store = transaction.objectStore('session');
+    const request = store.delete('current');
+
+    request.onsuccess = () => resolve();
+
+    request.onerror = () => reject(request.error);
   });
 }
