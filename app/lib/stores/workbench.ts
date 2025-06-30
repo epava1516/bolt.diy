@@ -273,8 +273,13 @@ export class WorkbenchStore {
     }
   }
 
-  getFileModifcations() {
+  getFileModifications() {
     return this.#filesStore.getFileModifications();
+  }
+
+  /** @deprecated Use getFileModifications instead */
+  getFileModifcations() {
+    return this.getFileModifications();
   }
 
   getModifiedFiles() {
