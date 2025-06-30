@@ -4,9 +4,14 @@ import { chatStore } from '~/lib/stores/chat';
 import { classNames } from '~/utils/classNames';
 import { HeaderActionButtons } from './HeaderActionButtons.client';
 import { ChatDescription } from '~/lib/persistence/ChatDescription.client';
+import { authStore, logout } from '~/lib/stores/auth';
+import { Button } from '~/components/ui/Button';
+import { useNavigate } from '@remix-run/react';
 
 export function Header() {
   const chat = useStore(chatStore);
+  const auth = useStore(authStore);
+  const navigate = useNavigate();
 
   return (
     <header
@@ -23,7 +28,7 @@ export function Header() {
           <img src="/logo-dark-styled.png" alt="logo" className="w-[90px] inline-block hidden dark:block" />
         </a>
       </div>
-      {chat.started && ( // Display ChatDescription and HeaderActionButtons only when the chat has started.
+      {chat.started && (
         <>
           <span className="flex-1 px-4 truncate text-center text-bolt-elements-textPrimary">
             <ClientOnly>{() => <ChatDescription />}</ClientOnly>
@@ -37,6 +42,24 @@ export function Header() {
           </ClientOnly>
         </>
       )}
+      <div className="ml-auto">
+        {auth.isAuthenticated ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+          >
+            Logout
+          </Button>
+        ) : (
+          <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+            Login
+          </Button>
+        )}
+      </div>
     </header>
   );
 }
