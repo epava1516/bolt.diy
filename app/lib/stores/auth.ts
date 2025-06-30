@@ -1,5 +1,4 @@
 import { atom } from 'nanostores';
-import { openDatabase, saveSession, getSession, deleteSession } from '~/lib/persistence/db';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -8,51 +7,55 @@ export interface AuthState {
 
 export const authStore = atom<AuthState>({ isAuthenticated: false });
 
-// Load session from IndexedDB on startup
-openDatabase()
-  .then(async (db) => {
-    if (!db) {
+async function loadSession() {
+  try {
+    const res = await fetch('/api/session');
+
+    if (!res.ok) {
       return;
     }
 
-    try {
-      const session = await getSession(db);
+    const data = (await res.json()) as {
+      isAuthenticated: boolean;
+      username?: string;
+    };
 
-      if (session) {
-        authStore.set({ isAuthenticated: true, username: session.username });
-      }
-    } catch (e) {
-      console.error('Failed to load session', e);
+    if (data.isAuthenticated) {
+      authStore.set({ isAuthenticated: true, username: data.username });
     }
-  })
-  .catch((e) => console.error('Failed to open DB for auth', e));
+  } catch (e) {
+    console.error('Failed to load session', e);
+  }
+}
 
-export async function login(username: string, _password: string) {
-  // A real app would verify credentials server-side
-  const newState = { isAuthenticated: true, username };
-  authStore.set(newState);
+// Automatically load session on startup
+loadSession();
 
-  const db = await openDatabase();
+export async function login(username: string, password: string) {
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
 
-  if (db) {
-    try {
-      await saveSession(db, crypto.randomUUID(), username);
-    } catch (e) {
-      console.error('Failed to save session', e);
+    if (!res.ok) {
+      throw new Error('Login failed');
     }
+
+    const data = (await res.json()) as { username: string };
+    authStore.set({ isAuthenticated: true, username: data.username });
+  } catch (e) {
+    console.error('Failed to login', e);
   }
 }
 
 export async function logout() {
-  authStore.set({ isAuthenticated: false });
-
-  const db = await openDatabase();
-
-  if (db) {
-    try {
-      await deleteSession(db);
-    } catch (e) {
-      console.error('Failed to delete session', e);
-    }
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch (e) {
+    console.error('Failed to logout', e);
+  } finally {
+    authStore.set({ isAuthenticated: false });
   }
 }
