@@ -1,5 +1,4 @@
 # Ignore Git and GitHub files
-.git
 .github/
 
 # Ignore Husky configuration files
