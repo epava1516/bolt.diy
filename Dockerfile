@@ -10,6 +10,8 @@ RUN npm install -g pnpm && pnpm install
 # 2) Copia el resto del código
 COPY . .
 
+COPY --chown=node:node .git .git
+
 # 3) Asegúrate de que package.json esté en public/
 #    (crea public/ si no existe y copia el package.json dentro)
 RUN mkdir -p public && cp package.json public/package.json
